@@ -1,0 +1,28 @@
+var HDWalletProvider = require("truffle-hdwallet-provider");
+var mnemonic = "";
+var providerUrl = "https://ropsten.infura.io/";
+
+
+module.exports = {
+  networks: {
+    ropsten: {
+    provider: function() {
+        return new HDWalletProvider(mnemonic, providerUrl)
+      },
+      network_id: 3,
+      gas: 4612388
+    },
+    ganache: {
+      host: "localhost",
+      port: 9545,
+      network_id: "5777" // Match any network id
+    },
+    rinkeby: {
+      host: "localhost", // Connect to geth on the specified
+      port: 9545,
+      from: "0x88c65c5ca67b70a75d62bf6e160d2b0c21fff246", // default address to use for any transaction Truffle makes during migrations
+      network_id: "*",
+      gas: 4612388 // Gas limit used for deploys
+    }
+  }
+  };
