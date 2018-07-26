@@ -8,13 +8,12 @@ const Web3 = require('web3');
 
 const tracetoDistributionAddress = process.argv.slice(2)[0];
 const BATCH_SIZE = process.argv.slice(2)[1];
-const tracetoWhitelistAddress = process.argv.slice(2)[2];
-const allocAmountTrue = process.argv.slice(2)[3];
+const allocAmountTrue = process.argv.slice(2)[2];
 
-const providerUrl = "<Provider-url>";
+const providerUrl = "https://ropsten.infura.io/<token>";
 
 const tracetoDistributionABI = require('../build/contracts/TokenDistribution.json');
-const wallet_priKey = "<PrivateKey>";
+const wallet_priKey = "";
 
 if(!BATCH_SIZE) BATCH_SIZE = 80;
 let distribData = new Array();
@@ -61,20 +60,23 @@ async function setAllocationWithPrivateKey() {
     const userBalance = await web3.eth.getBalance(account);
     web3.eth.getGasPrice((err, gasPrice)=>{
       const gasPriceHex = web3.utils.numberToHex(gasPrice*4);
-      const gasLimitHex = web3.utils.numberToHex(300000);
+      const gasLimitHex = web3.utils.numberToHex(450000);
 
       for (var i = 0; i < distribData.length; i++) {
-       tracetoDistribution.methods.doAllocationsWithAmounts(distribData[i],distribDataAmount[i] , reason, mode, web3.utils.asciiToHex("CoinManager"))
-       .send( {'from':account, 'gasPrice': gasPriceHex, 'gasLimit': gasLimitHex , 'nonce':nonce+i})
-       .then(function(txCompleteData, err){
-        if(!err){
-          console.log(txCompleteData)
+        if(distribData[i].length>0){
+          // console.log(distribData[i], distribDataAmount[i], mode, web3.utils.asciiToHex("PrivateSale"))
+          tracetoDistribution.methods.doAllocationsWithAmounts(distribData[i],distribDataAmount[i] , mode, web3.utils.asciiToHex("PrivateSale"))
+          .send( {'from':account, 'gasPrice': gasPriceHex, 'gasLimit': gasLimitHex , 'nonce':nonce+i})
+          .then(function(txCompleteData, err){
+            if(!err){
+              console.log(txCompleteData)
+            }
+            else
+              console.log(err)
+          })
         }
-        else
-          console.log(err)
-      })
-     }
-   })
+      }
+    })
   }
   catch(error){
     console.log('Caught an unexpected error::', error);
@@ -82,12 +84,6 @@ async function setAllocationWithPrivateKey() {
 
 }
 
-async function isWhitelisted(addr){
-  /*This function is intentionally left blank*/
-  var ABI = [];
-  const whitelistContract = new web3.eth.Contract(ABI, tracetoWhitelistAddress);
-  return await whitelistContract.whitelist(addr).call();
-}
 
 function readFile() {
   const stream = fs.createReadStream(__dirname+"/data/drop.csv");
